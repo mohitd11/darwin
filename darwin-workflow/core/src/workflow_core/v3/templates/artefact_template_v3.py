@@ -1,7 +1,13 @@
 import datetime
 import os
+import sys
 from abc import ABC
 from datetime import timedelta
+
+# Add airflow_core_module to Python path for operator imports
+if '/opt/airflow/airflow_core_module' not in sys.path:
+    sys.path.insert(0, '/opt/airflow/airflow_core_module')
+
 from airflow import DAG
 from airflow.models import Variable
 from airflow.models.baseoperator import chain

@@ -159,7 +159,9 @@ class WorkflowCoreV3Impl:
                 user_filters=body.user_filters,
                 status_filters=body.status_filters,
                 offset=body.offset,
-                page_size=body.page_size
+                page_size=body.page_size,
+                sort_by=body.sort_by,
+                sort_order=body.sort_order
             )
 
             # Convert to V3 format

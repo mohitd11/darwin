@@ -615,19 +615,23 @@ def get_job_submit_details(dag_id: str, dynamic_artifact: bool, source_type: str
         # Files will be picked up from source dynamically every time during workflow execution
         if source_type_lower == WORKSPACE:
             source_path = FSX_BASE_PATH_DYNAMIC_TRUE + source
-            entry_point = source_path + "/" + file_path
+            # Handle None file_path - for Workspace, file_path can be None
+            if file_path:
+                entry_point = source_path + "/" + file_path
+            else:
+                entry_point = source_path
         elif source_type_lower == GIT:
             source_path = github_repo_to_zip_link(source)
             pip_packages['pip'].append('smart_open')
             runtime_env = pip_packages | {"working_dir": source_path}
-            entry_point = file_path
+            entry_point = file_path if file_path else "" if file_path else ""
     else:
         # Files will be picked up during workflow creation once and uploaded to S3
         if source_type_lower == WORKSPACE:
             source_path = FSX_BASE_PATH + source
             s3_uri_path = __build_src_code(dag_id, source_path, env)
             runtime_env = pip_packages | {"working_dir": s3_uri_path}
-            entry_point = file_path
+            entry_point = file_path if file_path else ""
         elif source_type_lower == GIT:
             logger.info(f"[DEBUG] Calling __build_src_code_git for dag_id={dag_id}, source={source}")
             s3_uri_path = __build_src_code_git(dag_id, source, env)
@@ -646,11 +650,11 @@ def get_job_submit_details(dag_id: str, dynamic_artifact: bool, source_type: str
                     "AWS_ACCESS_KEY_ID": os.getenv("AWS_ACCESS_KEY_ID", "test"),
                     "AWS_SECRET_ACCESS_KEY": os.getenv("AWS_SECRET_ACCESS_KEY", "test"),
                 }
-            entry_point = file_path
+            entry_point = file_path if file_path else ""
             logger.info(f"[DEBUG] Set entry_point={entry_point}, runtime_env={runtime_env}")
         elif source_type_lower == ZIP:
             runtime_env = pip_packages | {"working_dir": source}
-            entry_point = file_path
+            entry_point = file_path if file_path else "" if file_path else ""
     
     logger.info(f"[DEBUG get_job_submit_details] Returning entry_point={entry_point}, runtime_env={runtime_env}")
     return entry_point, runtime_env

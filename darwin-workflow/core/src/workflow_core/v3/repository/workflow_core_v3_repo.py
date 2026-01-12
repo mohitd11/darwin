@@ -255,7 +255,7 @@ class WorkflowCoreV3Repo:
 
     async def search_workflows(self, query: Optional[str] = None, user_filters: Optional[List[str]] = None, 
                              status_filters: Optional[List[str]] = None, offset: int = 0, 
-                             page_size: int = 10) -> Tuple[int, List[DarwinWorkflow]]:
+                             page_size: int = 10, sort_by: str = "created_at", sort_order: str = "desc") -> Tuple[int, List[DarwinWorkflow]]:
         """
         Search workflows in the database based on the provided filters.
     
@@ -264,6 +264,8 @@ class WorkflowCoreV3Repo:
         :param status_filters: Optional list of statuses to filter by
         :param offset: Pagination offset
         :param page_size: Number of items per page
+        :param sort_by: Field to sort by (default: created_at)
+        :param sort_order: Sort order - 'asc' or 'desc' (default: desc)
         :return: Tuple of (total_count, list of DarwinWorkflow)
         """
         try:
@@ -287,6 +289,13 @@ class WorkflowCoreV3Repo:
 
             # Get total count
             total = await base_query.count()
+
+            # Apply sorting
+            sort_field = sort_by if hasattr(DarwinWorkflow, sort_by) else "created_at"
+            if sort_order.lower() == "desc":
+                base_query = base_query.order_by(f"-{sort_field}")
+            else:
+                base_query = base_query.order_by(sort_field)
 
             # Get paginated workflows
             workflows = await base_query.offset(offset).limit(page_size).all()

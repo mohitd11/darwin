@@ -105,9 +105,31 @@ class WorkflowBackgroundTaskDeployer:
             # Update workflow status
             await self.update_workflow_status(workflow, deploy_status, request.workflow_status)
 
-            # Activate DAG
-            return await self.airflow_v3.activate_dag(request.workflow_name)
+            # Only activate DAG if deployment was successful
+            if deploy_status:
+                return await self.airflow_v3.activate_dag(request.workflow_name)
+            else:
+                # Deployment failed, return error response
+                logger.warning(f"Deployment failed for workflow {request.workflow_name}, status already updated to CREATION_FAILED")
+                return error_handler("Deployment failed: DAG not synced to Airflow within timeout")
             
         except Exception as err:
-            logger.error(err.__str__())
+            logger.error(f"Error in deploy_workflow: {err.__str__()}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
+            
+            # Update workflow status to CREATION_FAILED on error
+            try:
+                if deploy_type == DeployType.CREATE:
+                    workflow = await self.repo.get_workflow_by_name(request.workflow_name)
+                else:
+                    workflow = await self.repo.get_workflow_by_id(workflow_id)
+                
+                if workflow:
+                    workflow.workflow_status = CREATION_FAILED
+                    await self.repo.save_workflow(workflow)
+                    logger.info(f"Updated workflow {workflow.workflow_id} status to CREATION_FAILED due to deployment error")
+            except Exception as status_err:
+                logger.error(f"Failed to update workflow status: {status_err.__str__()}")
+            
             return error_handler(err.__str__()) 

@@ -47,7 +47,7 @@ class WorkflowAppLayer:
         return resp
 
     def create_workflow_async(self, workflow_request: CreateWorkflow, user_email: str):
-        url = self._get_url("/v2/workflow")
+        url = self._get_url("/v3/workflow")
         headers = {"msd-user": f'{{"email": "{user_email}"}}'}
         payload = workflow_request.to_dict()
         resp = self._request(method="POST", url=url, payload=payload, headers=headers)
@@ -61,7 +61,7 @@ class WorkflowAppLayer:
         return resp
 
     def update_workflow_async(self, workflow_id: str, workflow_request: UpdateWorkflow, user_email: str):
-        url = self._get_url(f"/v2/workflow/{workflow_id}")
+        url = self._get_url(f"/v3/workflow/{workflow_id}")
         headers = {"msd-user": f'{{"email": "{user_email}"}}'}
         payload = workflow_request.to_dict()
         resp = self._request(method="PUT", url=url, payload=payload, headers=headers)
@@ -123,7 +123,7 @@ class WorkflowAppLayer:
         return resp
 
     def get_workflow_details(self, workflow_id: str, user_email: str = "SDK"):
-        url = self._get_url(f"/v2/workflow/{workflow_id}")
+        url = self._get_url(f"/v3/workflow/{workflow_id}")
         headers = {"msd-user": f'{{"email": "{user_email}"}}'}
         resp = self._request(method="GET", url=url, headers=headers)
         return resp
@@ -135,7 +135,7 @@ class WorkflowAppLayer:
         return resp
 
     def get_workflow_runs(self, workflow_id: str, user_email: str = "SDK"):
-        url = self._get_url(f"/v2/runs/{workflow_id}")
+        url = self._get_url(f"/v3/runs/{workflow_id}")
         headers = {"msd-user": f'{{"id": "{user_email}"}}'}
         payload = {
             "end_date": "None",
@@ -148,10 +148,9 @@ class WorkflowAppLayer:
         return resp
 
     def get_workflow_run_details(self, workflow_id: str, run_id: str, user_email: str = "SDK"):
-        url = self._get_url(f"/v2/run_details/{workflow_id}")
+        url = self._get_url(f"/v3/runs/{workflow_id}/{run_id}")
         headers = {"msd-user": f'{{"id":5513,"email": "{user_email}"}}'}
-        payload = {"run_id": run_id}
-        resp = self._request(method="POST", url=url, headers=headers, payload=payload)
+        resp = self._request(method="GET", url=url, headers=headers)
         return resp
 
     def get_workflow_task_details(self, workflow_id: str, run_id: str, task_id: str, user_email: str = "SDK"):
@@ -201,8 +200,6 @@ class WorkflowAppLayer:
         return resp
 
     def repair_workflow_run(self, workflow_id: str, run_id: str, selected_tasks: list, user_email: str = "SDK"):
-        url = self._get_url(f"/v1/repair_run/{workflow_id}")
-        headers = {"msd-user": f'{{"email": "{user_email}"}}'}
-        payload = {"run_id": run_id, "selected_tasks": selected_tasks}
-        resp = self._request(method="PUT", url=url, headers=headers, payload=payload)
-        return resp
+        # v1 repair_run endpoint removed - functionality moved to v3
+        # Use v3 run update endpoint or implement repair via v3 APIs
+        raise NotImplementedError("Repair run functionality needs to be implemented using v3 APIs")

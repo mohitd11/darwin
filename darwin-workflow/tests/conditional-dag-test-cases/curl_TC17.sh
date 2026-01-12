@@ -1,4 +1,4 @@
-curl --location "${WORKFLOW_API_URL:-http://localhost:8000}/v2/workflow" \
+curl --location "${WORKFLOW_API_URL:-http://localhost:8000}/v3/workflow" \
 --header 'msd-user: {"email":"test.user@example.com","id":""}' \
 --header 'Content-Type: application/json' \
 --data-raw '{
